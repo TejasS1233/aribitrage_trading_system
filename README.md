@@ -73,6 +73,40 @@ python -m pytest tests/ -v
 └── tests/
 ```
 
+## Roadmap
+
+### Phase 1: CEX Monitoring (current)
+- [x] Cross-exchange arbitrage detection
+- [x] Triangular arbitrage detection
+- [x] Paper trading with PnL tracking
+- [x] Rich terminal dashboard
+- [x] SQLite trade history
+
+### Phase 2: More Data Sources
+- [ ] DEX monitoring (Uniswap, Raydium, Orca via on-chain RPC)
+- [ ] Prediction market arbitrage (Polymarket par relationship)
+- [ ] WebSocket streaming (real-time order book updates instead of polling)
+- [ ] More symbols — auto-discover all shared trading pairs across exchanges
+
+### Phase 3: Smarter Detection
+- [ ] Bellman-Ford negative cycle detection (multi-hop paths beyond 3 currencies)
+- [ ] Optimal trade size calculation (account for order book depth / price impact)
+- [ ] Fee-aware routing (different fee tiers per exchange, BNB discounts, etc.)
+- [ ] Stale data filtering (reject quotes older than N seconds)
+
+### Phase 4: Execution
+- [ ] Live trading mode (real orders via ccxt)
+- [ ] Flash loan arbitrage on-chain (Solidity smart contract)
+- [ ] Jito bundle submission (Solana MEV)
+- [ ] Flashbots integration (Ethereum MEV)
+- [ ] Risk management (position limits, max exposure, single-leg recovery)
+
+### Phase 5: Production
+- [ ] Web dashboard (live portfolio view)
+- [ ] Alerting (Telegram/Discord notifications on opportunities)
+- [ ] Multi-strategy support (run multiple arb strategies concurrently)
+- [ ] Backtesting engine (replay historical data)
+
 ## Learning the concepts
 
 If you want to understand how arbitrage actually works — AMM math, graph theory, flash loans, MEV, order books, Bellman-Ford for cycle detection, and 200+ other concepts — see [MASTERY-CONCEPTS.md](MASTERY-CONCEPTS.md).
