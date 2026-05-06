@@ -1,0 +1,26 @@
+exchanges:
+  - binance
+  - coinbase
+  - kraken
+
+symbols:
+  - BTC/USDT
+  - ETH/USDT
+  - ETH/BTC
+
+starting_balance:
+  USDT: 10000
+
+fees:
+  default: 0.001
+  binance: 0.001
+  coinbase: 0.005
+
+poll_interval: 1.0
+min_profit_pct: 0.05
+
+database:
+  path: data/trades.db
+
+terminal:
+  max_rows: 10
