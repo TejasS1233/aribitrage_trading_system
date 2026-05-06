@@ -1,4 +1,3 @@
-"""Arbitrage Monitor — Paper Trading System"""
 import asyncio
 import yaml
 from core.engine import Engine
