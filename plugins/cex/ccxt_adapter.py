@@ -1,5 +1,4 @@
-import ccxt.async_support as ccxt
-import asyncio
+import ccxt
 from datetime import datetime
 from core.models import Ticker
 from plugins.base import DataSource
@@ -13,50 +12,47 @@ class CCXTAdapter(DataSource):
             exchange_class = getattr(ccxt, name, None)
             if exchange_class is None:
                 raise ValueError(f"Exchange '{name}' not supported by ccxt")
-            self.exchanges[name] = exchange_class({"enableRateLimit": rate_limit})
+            self.exchanges[name] = exchange_class({
+                "enableRateLimit": rate_limit,
+            })
 
-    async def connect(self):
-        await asyncio.gather(
-            *[ex.load_markets() for ex in self.exchanges.values()],
-            return_exceptions=True
-        )
+    def connect(self):
+        for name, ex in self.exchanges.items():
+            try:
+                ex.load_markets()
+                print(f"  {name}: loaded {len(ex.markets)} markets")
+            except Exception as e:
+                print(f"  {name}: failed ({e})")
 
-    async def fetch_tickers(self, symbols: list[str]) -> dict[str, dict[str, Ticker]]:
+    def fetch_tickers(self, symbols: list[str]) -> dict[str, dict[str, Ticker]]:
         result = {}
-        tasks = {
-            name: self._safe_fetch(ex, symbols)
-            for name, ex in self.exchanges.items()
-        }
-        responses = await asyncio.gather(*tasks.values())
-        for name, tickers in zip(tasks.keys(), responses):
-            if tickers:
-                result[name] = tickers
+        for name, ex in self.exchanges.items():
+            try:
+                raw = ex.fetch_tickers(symbols)
+                tickers = {}
+                for symbol, t in raw.items():
+                    if t.get("bid") and t.get("ask"):
+                        tickers[symbol] = Ticker(
+                            exchange=ex.id,
+                            symbol=symbol,
+                            bid=t["bid"],
+                            ask=t["ask"],
+                            bid_volume=t.get("bidVolume") or 0,
+                            ask_volume=t.get("askVolume") or 0,
+                            timestamp=datetime.now(),
+                        )
+                if tickers:
+                    result[name] = tickers
+            except Exception:
+                pass
         return result
 
-    async def _safe_fetch(self, exchange, symbols) -> dict[str, Ticker]:
-        try:
-            raw = await exchange.fetch_tickers(symbols)
-            return {
-                symbol: Ticker(
-                    exchange=exchange.id,
-                    symbol=symbol,
-                    bid=t.get("bid") or 0,
-                    ask=t.get("ask") or 0,
-                    bid_volume=t.get("bidVolume") or 0,
-                    ask_volume=t.get("askVolume") or 0,
-                    timestamp=datetime.now(),
-                )
-                for symbol, t in raw.items()
-                if t.get("bid") and t.get("ask")
-            }
-        except Exception:
-            return {}
-
-    async def get_exchange_names(self) -> list[str]:
+    def get_exchange_names(self) -> list[str]:
         return self.exchange_names
 
-    async def close(self):
-        await asyncio.gather(
-            *[ex.close() for ex in self.exchanges.values()],
-            return_exceptions=True
-        )
+    def close(self):
+        for ex in self.exchanges.values():
+            try:
+                ex.close()
+            except Exception:
+                pass

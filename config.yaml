@@ -2,11 +2,44 @@ exchanges:
   - binance
   - coinbase
   - kraken
+  - kucoin
+  - bybit
+  - okx
+  - bitfinex
+  - gate
 
 symbols:
   - BTC/USDT
   - ETH/USDT
   - ETH/BTC
+  - SOL/USDT
+  - SOL/BTC
+  - SOL/ETH
+  - XRP/USDT
+  - XRP/BTC
+  - XRP/ETH
+  - DOGE/USDT
+  - DOGE/BTC
+  - ADA/USDT
+  - ADA/BTC
+  - AVAX/USDT
+  - AVAX/BTC
+  - DOT/USDT
+  - DOT/BTC
+  - LINK/USDT
+  - LINK/BTC
+  - MATIC/USDT
+  - MATIC/BTC
+  - UNI/USDT
+  - UNI/BTC
+  - LTC/USDT
+  - LTC/BTC
+  - ATOM/USDT
+  - ATOM/BTC
+  - NEAR/USDT
+  - NEAR/BTC
+  - ARB/USDT
+  - OP/USDT
 
 starting_balance:
   USDT: 10000
@@ -15,12 +48,18 @@ fees:
   default: 0.001
   binance: 0.001
   coinbase: 0.005
+  kraken: 0.002
+  kucoin: 0.001
+  bybit: 0.001
+  okx: 0.001
+  bitfinex: 0.002
+  gate: 0.002
 
-poll_interval: 1.0
-min_profit_pct: 0.05
+poll_interval: 2.0
+min_profit_pct: 0.01
 
 database:
   path: data/trades.db
 
 terminal:
-  max_rows: 10
+  max_rows: 15

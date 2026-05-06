@@ -1,24 +1,23 @@
-import asyncio
 import yaml
 from core.engine import Engine
 from plugins.cex.ccxt_adapter import CCXTAdapter
 from output.terminal import format_opportunities, format_portfolio, clear_screen
 from output.database import Database
 
+
 def load_config(path: str = "config.yaml") -> dict:
     with open(path) as f:
         return yaml.safe_load(f)
 
-async def main():
+
+def main():
     config = load_config()
     print("Arbitrage Monitor starting...")
 
-    # Create data source
     source = CCXTAdapter(config["exchanges"])
-    await source.connect()
+    source.connect()
     print(f"Connected to {len(config['exchanges'])} exchanges")
 
-    # Create outputs
     db = Database(config.get("database", {}).get("path", "data/trades.db"))
     db.connect()
 
@@ -32,7 +31,6 @@ async def main():
                     db.save_opportunity(opp)
             db.save_portfolio(portfolio)
 
-    # Create and run engine
     engine = Engine(config, source, [TerminalOutput()])
     print(f"Monitoring {len(config['symbols'])} symbols")
     print(f"Poll interval: {config['poll_interval']}s")
@@ -40,12 +38,11 @@ async def main():
     print("\nPress Ctrl+C to stop\n")
 
     try:
-        await engine.run()
-    except KeyboardInterrupt:
-        print("\nShutting down...")
+        engine.run()
     finally:
         db.close()
-        await source.close()
+        source.close()
+
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

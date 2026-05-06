@@ -1,4 +1,6 @@
-# arb-lab
+# crypto-arbitrage-detector
+
+> **Disclaimer:** This project is for educational and research purposes only. It is not financial advice. Do not use this for actual trading or investment. Crypto markets are extremely competitive — real arbitrage opportunities are captured by HFT firms with sub-millisecond infrastructure. This tool will not make you money.
 
 Arbitrage monitoring system that detects price discrepancies across 100+ crypto exchanges and paper-trades them.
 
@@ -72,40 +74,6 @@ python -m pytest tests/ -v
 │   └── database.py            # SQLite persistence
 └── tests/
 ```
-
-## Roadmap
-
-### Phase 1: CEX Monitoring (current)
-- [x] Cross-exchange arbitrage detection
-- [x] Triangular arbitrage detection
-- [x] Paper trading with PnL tracking
-- [x] Rich terminal dashboard
-- [x] SQLite trade history
-
-### Phase 2: More Data Sources
-- [ ] DEX monitoring (Uniswap, Raydium, Orca via on-chain RPC)
-- [ ] Prediction market arbitrage (Polymarket par relationship)
-- [ ] WebSocket streaming (real-time order book updates instead of polling)
-- [ ] More symbols — auto-discover all shared trading pairs across exchanges
-
-### Phase 3: Smarter Detection
-- [ ] Bellman-Ford negative cycle detection (multi-hop paths beyond 3 currencies)
-- [ ] Optimal trade size calculation (account for order book depth / price impact)
-- [ ] Fee-aware routing (different fee tiers per exchange, BNB discounts, etc.)
-- [ ] Stale data filtering (reject quotes older than N seconds)
-
-### Phase 4: Execution
-- [ ] Live trading mode (real orders via ccxt)
-- [ ] Flash loan arbitrage on-chain (Solidity smart contract)
-- [ ] Jito bundle submission (Solana MEV)
-- [ ] Flashbots integration (Ethereum MEV)
-- [ ] Risk management (position limits, max exposure, single-leg recovery)
-
-### Phase 5: Production
-- [ ] Web dashboard (live portfolio view)
-- [ ] Alerting (Telegram/Discord notifications on opportunities)
-- [ ] Multi-strategy support (run multiple arb strategies concurrently)
-- [ ] Backtesting engine (replay historical data)
 
 ## Learning the concepts
 

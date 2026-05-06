@@ -1,4 +1,3 @@
-import asyncio
 from datetime import datetime
 from core.models import Ticker
 from core.engine import Engine
@@ -17,16 +16,16 @@ class FakeDataSource:
             },
         }
 
-    async def connect(self):
+    def connect(self):
         pass
 
-    async def fetch_tickers(self, symbols):
+    def fetch_tickers(self, symbols):
         return self.tickers
 
-    async def get_exchange_names(self):
+    def get_exchange_names(self):
         return ["binance", "coinbase"]
 
-    async def close(self):
+    def close(self):
         pass
 
 
@@ -46,7 +45,7 @@ def test_e2e_detects_cross_exchange():
         "symbols": ["BTC/USDT", "ETH/USDT", "ETH/BTC"],
     }
     engine = Engine(config, source, [Collector()])
-    asyncio.get_event_loop().run_until_complete(engine.run_once())
+    engine.run_once()
 
     cross = [o for o in collected if o.arb_type.value == "cross_exchange"]
     assert len(cross) >= 1

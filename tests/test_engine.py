@@ -1,4 +1,3 @@
-import asyncio
 from datetime import datetime
 from core.models import Ticker, PaperPortfolio
 from core.engine import Engine
@@ -8,16 +7,16 @@ class MockDataSource:
     def __init__(self, tickers):
         self._tickers = tickers
 
-    async def connect(self):
+    def connect(self):
         pass
 
-    async def fetch_tickers(self, symbols):
+    def fetch_tickers(self, symbols):
         return self._tickers
 
-    async def get_exchange_names(self):
+    def get_exchange_names(self):
         return list(self._tickers.keys())
 
-    async def close(self):
+    def close(self):
         pass
 
 
@@ -59,5 +58,5 @@ def test_engine_runs_one_cycle():
         "starting_balance": {"USDT": 10000},
     }
     engine = Engine(config, source, [output])
-    asyncio.get_event_loop().run_until_complete(engine.run_once())
+    engine.run_once()
     assert len(output.calls) == 1
