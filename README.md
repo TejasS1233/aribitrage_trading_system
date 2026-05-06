@@ -1,16 +1,16 @@
 # crypto-arbitrage-detector
 
-> **Disclaimer:** This project is for educational and research purposes only. It is not financial advice. Do not use this for actual trading or investment. Crypto markets are extremely competitive — real arbitrage opportunities are captured by HFT firms with sub-millisecond infrastructure. This tool will not make you money.
+> **Disclaimer:** This project is for educational and research purposes only. It is not financial advice. Do not use this for actual trading or investment. Crypto markets are extremely competitive - real arbitrage opportunities are captured by HFT firms with sub-millisecond infrastructure. This tool will not make you money.
 
 Arbitrage monitoring system that detects price discrepancies across 100+ crypto exchanges and paper-trades them.
 
 ## What it does
 
-- **Cross-exchange arbitrage** — buys BTC cheap on Coinbase, sells expensive on Binance
-- **Triangular arbitrage** — cycles through 3 currencies on one exchange (e.g. BTC→ETH→USDT→BTC)
-- **Paper trading** — simulates trades with fake money, tracks PnL, win rate, fees
-- **Live terminal dashboard** — Rich-powered display of opportunities and portfolio
-- **SQLite history** — logs every opportunity and trade to a local database
+- **Cross-exchange arbitrage** - buys BTC cheap on Coinbase, sells expensive on Binance
+- **Triangular arbitrage** - cycles through 3 currencies on one exchange (e.g. BTC->ETH->USDT->BTC)
+- **Paper trading** - simulates trades with fake money, tracks PnL, win rate, fees
+- **Live terminal dashboard** - Rich-powered display of opportunities and portfolio
+- **SQLite history** - logs every opportunity and trade to a local database
 
 Uses ccxt for exchange connectivity, so it works with Binance, Coinbase, Kraken, and 100+ other exchanges out of the box.
 
@@ -61,7 +61,7 @@ python -m pytest tests/ -v
 ├── config.yaml                # exchange/symbol/fee settings
 ├── core/
 │   ├── models.py              # Ticker, Opportunity, PaperTrade, PaperPortfolio
-│   ├── engine.py              # main loop — fetch → detect → paper trade → display
+│   ├── engine.py              # main loop - fetch -> detect -> paper trade -> display
 │   └── arbitrage/
 │       ├── cross_exchange.py  # buy low on A, sell high on B
 │       └── triangular.py      # A→B→C→A cycle detection
@@ -77,6 +77,6 @@ python -m pytest tests/ -v
 
 ## Learning the concepts
 
-If you want to understand how arbitrage actually works — AMM math, graph theory, flash loans, MEV, order books, Bellman-Ford for cycle detection, and 200+ other concepts — see [MASTERY-CONCEPTS.md](MASTERY-CONCEPTS.md).
+If you want to understand how arbitrage actually works - AMM math, graph theory, flash loans, MEV, order books, Bellman-Ford for cycle detection, and 200+ other concepts - see [MASTERY-CONCEPTS.md](MASTERY-CONCEPTS.md).
 
 It's a textbook-length reference compiled from 13 open-source arbitrage repos, organized into 10 chapters covering everything from blockchain fundamentals to trading system architecture.
