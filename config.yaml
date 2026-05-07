@@ -56,10 +56,10 @@ fees:
   gate: 0.0002
 
 poll_interval: 2.0
-min_profit_pct: 0.0
-min_volume: 0
+min_profit_pct: 0.05
+min_volume: 1
 
-hurdle_rate: 0.0
+hurdle_rate: 0.001
 
 database:
   path: data/trades.db
