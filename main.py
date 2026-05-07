@@ -10,7 +10,7 @@ from plugins.websocket.ws_manager import WebSocketManager
 from output.terminal import format_opportunities, format_portfolio, clear_screen
 from output.database import Database
 from core.ai_advice import generate_ai_advice
-from flask import Flask, send_from_folder
+from flask import Flask, send_from_directory
 import json
 import threading
 import time
@@ -73,22 +73,23 @@ def main():
                     db.save_opportunity(opp)
             db.save_portfolio(portfolio)
 
-    config["symbols"] = symbols
+config["symbols"] = symbols
+
+    WEB_STATE = {
+        "portfolio": {"balance": 10000, "trades": 0, "wins": 0, "losses": 0},
+        "opportunities": [],
+        "exchanges": config["exchanges"],
+        "ai_advice": None
+    }
 
     engine = Engine(config, source, [TerminalOutput()], ws_manager=ws_manager)
     print(f"Monitoring {len(symbols)} symbols", flush=True)
-    WEB_STATE = {
-    "portfolio": {"balance": 10000, "trades": 0, "wins": 0, "losses": 0},
-    "opportunities": [],
-    "exchanges": [],
-    "ai_advice": None
-}
 
 app = Flask(__name__, template_folder="templates")
 
 @app.route("/")
 def index():
-    return send_from_folder("templates", "dashboard.html")
+    return send_from_directory("templates", "dashboard.html")
 
 @app.route("/api/status")
 def api_status():
