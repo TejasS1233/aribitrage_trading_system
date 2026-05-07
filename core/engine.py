@@ -1,4 +1,6 @@
+import os
 import time
+import logging
 from core.models import PaperPortfolio, PaperTrade, Opportunity
 from core.arbitrage.triangular import find_triangular_opportunities
 from core.arbitrage.cross_exchange import find_cross_exchange_opportunities
@@ -13,6 +15,8 @@ class Engine:
         self.source = data_source
         self.outputs = outputs
         self.ws_manager = ws_manager
+        self.debug = bool(config.get("debug")) or os.getenv("ARB_DEBUG") == "1"
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.portfolio = PaperPortfolio(
             balance=dict(config.get("starting_balance", {"USDT": 10000}))
         )
@@ -25,20 +29,53 @@ class Engine:
     def run_once(self):
         if self.ws_manager and self.ws_manager.is_connected():
             tickers = self.ws_manager.get_tickers(self.symbols)
+            source_label = "websocket"
         else:
             tickers = self.source.fetch_tickers(self.symbols)
+            source_label = "polling"
 
         if not tickers:
+            if self.debug:
+                self.logger.info("No tickers returned (source=%s)", source_label)
             return
+
+        if self.debug:
+            total_symbols = sum(len(ex) for ex in tickers.values())
+            self.logger.info(
+                "Tickers fetched (source=%s exchanges=%d symbols=%d min_profit=%.4f)",
+                source_label,
+                len(tickers),
+                total_symbols,
+                self.min_profit,
+            )
 
         tickers = filter_stale_tickers(tickers, self.stale_max_age)
         if not tickers:
+            if self.debug:
+                self.logger.info("All tickers filtered as stale (max_age=%.2fs)", self.stale_max_age)
             return
+
+        if self.debug:
+            total_symbols = sum(len(ex) for ex in tickers.values())
+            self.logger.info(
+                "Tickers after stale filter (exchanges=%d symbols=%d)",
+                len(tickers),
+                total_symbols,
+            )
 
         opportunities = []
         opportunities += find_triangular_opportunities(tickers, self.fees, self.min_profit)
         opportunities += find_cross_exchange_opportunities(tickers, self.fees, self.min_profit)
         opportunities += find_bellman_ford_opportunities(tickers, self.fees, self.min_profit)
+
+        if self.debug:
+            self.logger.info(
+                "Opportunities found (triangular=%d cross=%d bellman=%d total=%d)",
+                sum(1 for o in opportunities if o.arb_type.value == "triangular"),
+                sum(1 for o in opportunities if o.arb_type.value == "cross_exchange"),
+                sum(1 for o in opportunities if o.arb_type.value == "bellman_ford"),
+                len(opportunities),
+            )
 
         for opp in opportunities:
             if opp.profit_pct >= self.min_profit:

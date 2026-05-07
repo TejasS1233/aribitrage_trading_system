@@ -8,6 +8,7 @@ class CCXTAdapter(DataSource):
     def __init__(self, exchanges: list[str], rate_limit: bool = True):
         self.exchange_names = exchanges
         self.exchanges: dict[str, ccxt.Exchange] = {}
+        self._debug = False
         for name in exchanges:
             exchange_class = getattr(ccxt, name, None)
             if exchange_class is None:
@@ -28,7 +29,17 @@ class CCXTAdapter(DataSource):
         result = {}
         for name, ex in self.exchanges.items():
             try:
-                raw = ex.fetch_tickers(symbols)
+                exchange_symbols = symbols
+                markets = getattr(ex, "markets", None)
+                if markets:
+                    exchange_symbols = [symbol for symbol in symbols if symbol in markets]
+                if self._debug:
+                    print(f"  {name}: requesting {len(exchange_symbols)} symbols")
+                if not exchange_symbols:
+                    if self._debug:
+                        print(f"  {name}: no supported symbols requested")
+                    continue
+                raw = ex.fetch_tickers(exchange_symbols)
                 tickers = {}
                 for symbol, t in raw.items():
                     if t.get("bid") and t.get("ask"):
@@ -41,11 +52,21 @@ class CCXTAdapter(DataSource):
                             ask_volume=t.get("askVolume") or 0,
                             timestamp=datetime.now(),
                         )
+                    elif self._debug:
+                        print(f"  {name}: missing bid/ask for {symbol}")
                 if tickers:
+                    if self._debug:
+                        print(f"  {name}: returned {len(tickers)} tickers")
                     result[name] = tickers
-            except Exception:
-                pass
+                elif self._debug:
+                    print(f"  {name}: no tickers returned for symbols")
+            except Exception as e:
+                if self._debug:
+                    print(f"  {name}: fetch_tickers failed ({e})")
         return result
+
+    def set_debug(self, enabled: bool) -> None:
+        self._debug = enabled
 
     def get_exchange_names(self) -> list[str]:
         return self.exchange_names

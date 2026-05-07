@@ -64,6 +64,8 @@ database:
 terminal:
   max_rows: 15
 
+debug: false
+
 auto_discover:
   enabled: false
   min_volume_24h: 100000

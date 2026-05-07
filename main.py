@@ -1,4 +1,6 @@
+import os
 import yaml
+import logging
 from core.engine import Engine
 from core.symbol_discovery import SymbolDiscovery
 from plugins.cex.ccxt_adapter import CCXTAdapter
@@ -14,9 +16,15 @@ def load_config(path: str = "config.yaml") -> dict:
 
 def main():
     config = load_config()
+    debug_enabled = bool(config.get("debug")) or os.getenv("ARB_DEBUG") == "1"
+    if debug_enabled:
+        logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
     print("Arbitrage Monitor starting...", flush=True)
 
     source = CCXTAdapter(config["exchanges"])
+    if debug_enabled:
+        source.set_debug(True)
     source.connect()
     print(f"Connected to {len(config['exchanges'])} exchanges", flush=True)
 
