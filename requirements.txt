@@ -3,3 +3,9 @@ rich>=13.0.0
 pyyaml>=6.0
 pytest>=7.0.0
 pytest-asyncio>=0.21.0
+flask
+flask-socketio
+python-socketio
+websockets
+web3>=6.0.0
+solana>=0.30.0
