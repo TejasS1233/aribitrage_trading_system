@@ -25,6 +25,8 @@ class TestOutput:
         format_portfolio(portfolio)
 
 config["debug"] = True
+config["min_volume"] = 0
+config["hurdle_rate"] = 0
 engine = Engine(config, source, [TestOutput()])
 engine.run_once()
 print("\nDone!")

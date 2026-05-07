@@ -22,6 +22,8 @@ class Engine:
             balance=dict(config.get("starting_balance", {"USDT": 10000}))
         )
         self.min_profit = config.get("min_profit_pct", 0.05)
+        self.min_volume = config.get("min_volume", 10)
+        self.hurdle_rate = config.get("hurdle_rate", 0.003)  # 0.3%
         self.fees = config.get("fees", {"default": 0.001})
         self.poll_interval = config.get("poll_interval", 1.0)
         self.symbols = config.get("symbols", [])
@@ -87,7 +89,10 @@ class Engine:
             )
 
         for opp in opportunities:
-            if opp.profit_pct >= self.min_profit:
+            passes_hurdle = opp.profit_pct >= self.hurdle_rate
+            passes_min_vol = opp.volume >= self.min_volume
+            
+            if passes_hurdle and passes_min_vol:
                 trade = self._paper_trade(opp)
                 self.portfolio.total_trades += 1
                 if trade.realized_pnl > 0:
