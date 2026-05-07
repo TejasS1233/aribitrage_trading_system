@@ -8,6 +8,7 @@ build/
 .DS_Store
 Thumbs.db
 node_modules/
+.worktrees/
 .venv/
 venv/
 *.sqlite3
