@@ -61,6 +61,17 @@ min_volume: 1
 
 hurdle_rate: 0.001
 
+telegram:
+  enabled: false
+  bot_token: ""
+  chat_id: ""
+
+slack:
+  enabled: false
+  webhook: ""
+
+stop_loss_pct: -0.5
+
 database:
   path: data/trades.db
 

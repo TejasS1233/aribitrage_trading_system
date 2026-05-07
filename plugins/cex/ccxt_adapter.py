@@ -71,14 +71,37 @@ class CCXTAdapter(DataSource):
     def get_exchange_names(self) -> list[str]:
         return self.exchange_names
 
+    def fetch_order_book(self, symbol: str, limit: int = 20) -> dict:
+        """Fetch order book for a symbol to check depth."""
+        for name, ex in self.exchanges.items():
+            try:
+                if symbol in ex.markets:
+                    book = ex.fetch_order_book(symbol, limit)
+                    return {
+                        "bids": book.get("bids", []),
+                        "asks": book.get("asks", []),
+                    }
+            except Exception:
+                continue
+        return {"bids": [], "asks": []}
+    
+    def has_volume(self, symbol: str, amount: float) -> bool:
+        """Check if order book has enough volume at price."""
+        book = self.fetch_order_book(symbol, 20)
+        bids = book.get("bids", [])
+        asks = book.get("asks", [])
+        
+        bid_vol = sum(vol for price, vol in bids[:5]) if bids else 0
+        ask_vol = sum(vol for price, vol in asks[:5]) if asks else 0
+        
+        return bid_vol >= amount and ask_vol >= amount
+    
     def close(self):
         for ex in self.exchanges.values():
             try:
                 ex.close()
             except Exception:
                 pass
-
-    def fetch_funding_rates(self, symbols: list[str] | None = None) -> dict[str, dict]:
         """Fetch funding rates for futures symbols."""
         result = {}
         for name, ex in self.exchanges.items():

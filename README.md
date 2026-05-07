@@ -116,63 +116,6 @@ If you want to understand how arbitrage actually works - AMM math, graph theory,
 
 It's a textbook-length reference compiled from 13 open-source arbitrage repos, organized into 10 chapters covering everything from blockchain fundamentals to trading system architecture.
 
-## Sample Results
-
-Run with `ARB_DEBUG=1 python main.py` to see live output:
-
-```
-Arbitrage Monitor starting...
-  binance: loaded 4336 markets
-  coinbase: loaded 1169 markets
-  kucoin: loaded 1642 markets
-  bybit: loaded 3292 markets
-  gate: loaded 6786 markets
-Connected to 6 exchanges
-Monitoring 31 symbols
-Poll interval: 2.0s
-Min profit: 0.0%
-
-[INFO] Tickers fetched (source=polling exchanges=5 symbols=118 min_profit=0.0000)
-  binance: returned 29 tickers
-  kucoin: returned 26 tickers
-  bybit: returned 20 tickers
-  gate: returned 22 tickers
-[INFO] Tickers after stale filter (exchanges=5 symbols=118)
-[INFO] Opportunities found (triangular=0 cross=6 bellman=4 total=10)
-
-             Arbitrage Opportunities              
-+-----------------------------------------------+
-| Type | Exchange(s) | Path | Profit % | Volume |
-|------|-------------|------|---------|--------|
-| CROSS_EXCHANGE | binance/kucoin | BTC/USDT | +0.01% | 1.2345 |
-| CROSS_EXCHANGE | binance/kucoin | ETH/USDT | +0.02% | 2.3456 |
-| BELLMAN_FORD | binance→kucoin→gate | BTC→ETH→USDT | +0.01% | 0.8900 |
-+-----------------------------------------------+
-
-Portfolio: $10,000.00 | Trades: 0 | Wins: 0 | Losses: 0
-```
-
-### Understanding the Output
-
-- **Tickers fetched** = number of price quotes received per exchange (after symbol filtering)
-- **Cross-exchange** = buy low on A, sell high on B (same symbol, different exchange)
-- **Bellman-Ford** = multi-hop cycle (e.g., BTC→ETH→USDT→BTC across 3 exchanges)
-- **Profit %** = spread minus fees. Positive = profitable, negative = loss
-- **Volume** = available liquidity (bid_volume × ask_volume)
-
-### Debug Mode
-
-Enable with environment variable:
-```bash
-export ARB_DEBUG=1
-python main.py
-```
-
-Or add to config.yaml:
-```yaml
-debug: true
-```
-
 ## Fee Note
 
 This bot uses **maker fees** (0.01%) by default. To get these rates:

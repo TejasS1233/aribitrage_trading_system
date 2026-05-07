@@ -28,6 +28,11 @@ class Engine:
         self.poll_interval = config.get("poll_interval", 1.0)
         self.symbols = config.get("symbols", [])
         self.stale_max_age = config.get("stale_filter", {}).get("max_age_seconds", 5.0)
+        self.stop_loss_pct = config.get("stop_loss_pct", -0.5)
+        
+        # Notifications
+        self.telegram_config = config.get("telegram", {})
+        self.slack_config = config.get("slack", {})
 
     def run_once(self):
         if self.ws_manager and self.ws_manager.is_connected():
