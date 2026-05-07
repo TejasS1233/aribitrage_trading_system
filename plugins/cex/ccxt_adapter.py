@@ -77,3 +77,21 @@ class CCXTAdapter(DataSource):
                 ex.close()
             except Exception:
                 pass
+
+    def fetch_funding_rates(self, symbols: list[str] | None = None) -> dict[str, dict]:
+        """Fetch funding rates for futures symbols."""
+        result = {}
+        for name, ex in self.exchanges.items():
+            try:
+                if hasattr(ex, 'fetchFundingRates'):
+                    if symbols:
+                        raw = ex.fetchFundingRates(symbols)
+                    else:
+                        raw = ex.fetchFundingRates()
+                    result[name] = raw
+                    if self._debug:
+                        print(f"  {name}: fetched {len(raw)} funding rates")
+            except Exception as e:
+                if self._debug:
+                    print(f"  {name}: fetch_funding_rates failed ({e})")
+        return result
