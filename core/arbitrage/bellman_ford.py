@@ -64,7 +64,7 @@ def find_bellman_ford_opportunities(
                         path=path,
                         profit_pct=round(profit_pct, 4),
                         profit_amount=0.0,
-                        volume=1.0,
+                        volume=1000.0,
                     ))
 
     seen = set()

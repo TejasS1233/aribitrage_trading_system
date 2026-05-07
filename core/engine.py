@@ -100,11 +100,14 @@ class Engine:
             if passes_hurdle and passes_min_vol:
                 trade = self._paper_trade(opp)
                 self.portfolio.total_trades += 1
+                if self.debug:
+                    print(f"  TRADE: {opp.path} | profit={opp.profit_pct:.4f}% | fees=${trade.fees_paid:.2f} | net=${trade.realized_pnl:.2f}")
                 if trade.realized_pnl > 0:
                     self.portfolio.wins += 1
                 else:
                     self.portfolio.losses += 1
                 self.portfolio.total_pnl += trade.realized_pnl
+                self.portfolio.total_value_usd += trade.realized_pnl
 
         for output in self.outputs:
             output.update(opportunities, self.portfolio)
@@ -112,7 +115,12 @@ class Engine:
     def _paper_trade(self, opp: Opportunity) -> PaperTrade:
         default_fee = self.fees.get("default", 0.001)
         fee_rate = default_fee
-        total_fees = opp.volume * (opp.profit_pct / 100) * fee_rate * len(opp.path)
+        
+        # Calculate fees: price * volume * fee_rate for both buy AND sell
+        # profit_amount is already in $, so convert back to price equivalent
+        trade_value = opp.profit_amount / (opp.profit_pct / 100) if opp.profit_pct > 0 else opp.volume * 1000
+        total_fees = trade_value * fee_rate * 2  # buy + sell fees
+        
         realized_pnl = opp.profit_amount - total_fees
 
         return PaperTrade(

@@ -1,202 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arb Scanner</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: #0d1117; 
-            color: #e6edf3; 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            min-height: 100vh;
-        }
-        .header {
-            background: #161b22;
-            padding: 20px;
-            border-bottom: 1px solid #30363d;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header h1 { font-size: 24px; color: #58a6ff; }
-        .status { 
-            display: flex; 
-            gap: 20px; 
-            align-items: center;
-        }
-        .status span {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-        }
-        .status .live { background: #238636; }
-        .status .scanning { background: #da3633; }
-        .container { padding: 20px; }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        .card {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 20px;
-        }
-        .card h2 { 
-            font-size: 16px; 
-            color: #8b949e; 
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .big-number {
-            font-size: 36px;
-            font-weight: bold;
-            color: #58a6ff;
-        }
-        .opps-list { max-height: 300px; overflow-y: auto; }
-        .opp {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px;
-            border-bottom: 1px solid #30363d;
-            align-items: center;
-        }
-        .opp:last-child { border-bottom: none; }
-        .opp .pair { font-weight: bold; }
-        .opp .profit { 
-            color: #3fb950; 
-            font-weight: bold;
-        }
-        .opp .profit.loss { color: #f85149; }
-        .opp .exchanges { 
-            font-size: 12px; 
-            color: #8b949e; 
-        }
-        .ai-advice {
-            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-            border-left: 4px solid #10b981;
-            padding: 15px;
-            margin-top: 10px;
-        }
-        .ai-advice p { line-height: 1.6; }
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: #8b949e;
-            font-size: 14px;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .scanning { animation: pulse 1s infinite; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arb Scanner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;510;590&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/linear.css">
 </head>
 <body>
-    <div class="header">
-        <h1>⚡ Arb Scanner</h1>
-        <div class="status">
-            <span id="exchanges">Loading...</span>
-            <span class="live">● LIVE</span>
+  <header class="header">
+    <div class="brand">
+      <div class="logo"></div>
+      <span class="brand-name">Arb Scanner</span>
+    </div>
+    <div class="status-badge">
+      <span class="status-dot"></span>
+      LIVE
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Portfolio Value</div>
+        <div class="stat-value" id="balance">$10,000</div>
+        <div class="stat-sub">
+          <span class="win" id="wins">0</span> wins / 
+          <span class="loss" id="losses">0</span> losses
         </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Opportunities Found</div>
+        <div class="stat-value" id="found">0</div>
+        <div class="stat-sub">
+          <span id="cross">0</span> cross / 
+          <span id="triangular">0</span> triangular
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Trades</div>
+        <div class="stat-value" id="trades">0</div>
+        <div class="stat-sub" id="exchanges-list">-</div>
+      </div>
     </div>
 
-    <div class="container">
-        <div class="grid">
-            <div class="card">
-                <h2>Portfolio</h2>
-                <div class="big-number" id="balance">$10,000</div>
-                <p style="margin-top: 10px; color: #8b949e;">
-                    Trades: <span id="trades">0</span> | 
-                    Wins: <span id="wins" style="color: #3fb950">0</span> | 
-                    Losses: <span id="losses" style="color: #f85149">0</span>
-                </p>
-            </div>
-            <div class="card">
-                <h2>Found Today</h2>
-                <div class="big-number" id="found">0</div>
-                <p style="margin-top: 10px; color: #8b949e;">
-                    Cross: <span id="cross">0</span> | 
-                    Bellman: <span id="bellman">0</span>
-                </p>
-            </div>
-            <div class="card">
-                <h2>Exchanges</h2>
-                <div class="big-number" id="exch-count">0</div>
-                <p style="margin-top: 10px; color: #8b949e;" id="exch-list">-</p>
-            </div>
-        </div>
-
-        <div class="grid">
-            <div class="card">
-                <h2>AI Advice</h2>
-                <div class="ai-advice" id="ai-advice">
-                    <p>Waiting for opportunities...</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>Live Opportunities</h2>
-            <div class="opps-list" id="opps">
-                <p style="color: #8b949e; padding: 20px;">Scanning...</p>
-            </div>
-        </div>
+    <div class="advice-card">
+      <div class="advice-header">AI Insight</div>
+      <div class="advice-content" id="ai-advice">Waiting for opportunities...</div>
     </div>
 
-    <div class="footer">
-        Auto-refreshes every 5s | Made with ⚡
+    <div class="opps-section">
+      <div class="opps-header">
+        <span class="opps-title">Live Opportunities</span>
+        <span class="opps-count" id="opps-count">0</span>
+      </div>
+      <div class="opps-list" id="opps-list">
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 6v6l4 2"></path>
+            </svg>
+          </div>
+          <div class="empty-title">Scanning for opportunities</div>
+          <div class="empty-desc">Checking exchanges for arbitrage...</div>
+        </div>
+      </div>
     </div>
+  </main>
 
-    <script>
-        async function update() {
-            try {
-                const res = await fetch('/api/status');
-                const data = await res.json();
-                
-                document.getElementById('balance').textContent = '$' + data.portfolio.balance.toLocaleString();
-                document.getElementById('trades').textContent = data.portfolio.trades;
-                document.getElementById('wins').textContent = data.portfolio.wins;
-                document.getElementById('losses').textContent = data.portfolio.losses;
-                
-                document.getElementById('found').textContent = data.opportunities.length;
-                document.getElementById('cross').textContent = data.opportunities.filter(o => o.type === 'cross_exchange').length;
-                document.getElementById('bellman').textContent = data.opportunities.filter(o => o.type === 'bellman_ford').length;
-                
-                document.getElementById('exch-count').textContent = data.exchanges.length;
-                document.getElementById('exch-list').textContent = data.exchanges.join(', ');
-                
-                const oppsEl = document.getElementById('opps');
-                if (data.opportunities.length === 0) {
-                    oppsEl.innerHTML = '<p style="color: #8b949e; padding: 20px;">No opportunities found</p>';
-                } else {
-                    oppsEl.innerHTML = data.opportunities.map(o => `
-                        <div class="opp">
-                            <div>
-                                <div class="pair">${o.path}</div>
-                                <div class="exchanges">${o.exchanges.join(' → ')}</div>
-                            </div>
-                            <div class="profit ${o.profit >= 0 ? '' : 'loss'}">${o.profit >= 0 ? '+' : ''}${o.profit.toFixed(4)}%</div>
-                        </div>
-                    `).join('');
-                }
-                
-                const aiEl = document.getElementById('ai-advice');
-                if (data.ai_advice) {
-                    aiEl.innerHTML = `<p>${data.ai_advice}</p>`;
-                }
-            } catch(e) {
-                console.error(e);
-            }
-        }
-        
-        update();
-        setInterval(update, 5000);
-    </script>
+  
+
+  <script src="/static/js/app.js"></script>
 </body>
 </html>

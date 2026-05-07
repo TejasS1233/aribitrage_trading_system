@@ -51,6 +51,10 @@ fees:
 
 poll_interval: 1.0       # seconds between checks
 min_profit_pct: 0.05      # minimum profit % to log
+
+# Volume handling
+# Exchanges often return volume=0 (no data). System defaults to $1000 when unavailable.
+min_volume: 1000         # minimum volume to consider (filters noise)
 starting_balance:
   USDT: 10000
 

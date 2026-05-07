@@ -42,6 +42,8 @@ def find_cross_exchange_opportunities(
             continue
 
         volume = min(best_bid_ticker.bid_volume, best_ask_ticker.ask_volume)
+        if volume == 0:
+            volume = 1000  # Default $1000 if no volume data
 
         opportunities.append(
             Opportunity(
