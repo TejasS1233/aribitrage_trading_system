@@ -4,7 +4,7 @@ import logging
 import threading
 from dotenv import load_dotenv
 load_dotenv()
-from flask import Flask, send_from_directory, jsonify
+from flask import Flask, send_from_directory
 from core.engine import Engine
 from core.symbol_discovery import SymbolDiscovery
 from plugins.cex.ccxt_adapter import CCXTAdapter
@@ -14,19 +14,29 @@ from output.database import Database
 from core.ai_advice import generate_ai_advice
 
 
-def load_config(path: str = "config.yaml") -> dict:
-    with open(path) as f:
-        return yaml.safe_load(f)
-
-
-app = Flask(__name__, template_folder="templates")
-
 WEB_STATE = {
     "portfolio": {"balance": 10000, "trades": 0, "wins": 0, "losses": 0, "win_rate": "N/A", "total_pnl": 0},
     "opportunities": [],
     "exchanges": [],
     "ai_advice": None
 }
+
+web_lock = threading.Lock()
+WEB_STATE = {
+    "portfolio": {"balance": 10000, "trades": 0, "wins": 0, "losses": 0, "win_rate": "N/A", "total_pnl": 0},
+    "opportunities": [],
+    "exchanges": [],
+    "ai_advice": None
+}
+_last_opportunities = []
+_last_update_time = 0
+
+app = Flask(__name__, template_folder="templates")
+
+
+def load_config(path: str = "config.yaml") -> dict:
+    with open(path) as f:
+        return yaml.safe_load(f)
 
 
 def load_portfolio_from_db(db: Database) -> dict:
@@ -39,7 +49,7 @@ def load_portfolio_from_db(db: Database) -> dict:
             total_value_usd, total_trades, wins, losses, total_pnl = row
             win_rate = f"{wins / total_trades * 100:.0f}%" if total_trades > 0 else "N/A"
             return {
-                "balance": total_value_usd,
+                "balance": total_value_usd or 10000,
                 "trades": total_trades,
                 "wins": wins,
                 "losses": losses,
@@ -63,21 +73,46 @@ def serve_static(filename):
 
 @app.route("/api/status")
 def api_status():
-    return {
-        "portfolio": WEB_STATE["portfolio"],
-        "opportunities": [
-            {
-                "path": o.path,
-                "exchanges": o.exchanges,
-                "profit": o.profit_pct,
-                "volume": o.volume,
-                "type": o.arb_type.value
+    import time
+    global _last_opportunities, _last_update_time
+    try:
+        with web_lock:
+            # Use cached opportunities for up to 5 seconds
+            if time.time() - _last_update_time > 5:
+                opps = _last_opportunities
+            else:
+                opps = WEB_STATE["opportunities"]
+            data = {
+                "portfolio": WEB_STATE["portfolio"],
+                "opportunities": [
+                    {
+                        "path": o.path[0] if isinstance(o.path, list) else o.path,
+                        "exchanges": o.exchanges[0] if isinstance(o.exchanges, list) else o.exchanges,
+                        "profit": o.profit_pct,
+                        "volume": o.volume,
+                        "type": o.arb_type.value
+                    }
+                    for o in opps
+                ],
+                "exchanges": WEB_STATE["exchanges"],
+                "ai_advice": WEB_STATE["ai_advice"]
             }
-            for o in WEB_STATE["opportunities"]
-        ],
-        "exchanges": WEB_STATE["exchanges"],
-        "ai_advice": WEB_STATE["ai_advice"]
-    }
+            return data
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
+@app.route("/api/pnl-history")
+def api_pnl_history():
+    global db
+    try:
+        cursor = db.conn.execute(
+            "SELECT timestamp, total_pnl FROM portfolio_snapshots ORDER BY id DESC LIMIT 20"
+        )
+        rows = cursor.fetchall()
+        return {"pnl": [{"timestamp": r[0], "value": r[1]} for r in reversed(rows)]}
+    except Exception:
+        return {"pnl": []}
 
 
 def run_flask():
@@ -96,6 +131,8 @@ def main():
     if debug_enabled:
         source.set_debug(True)
     source.connect()
+
+    global WEB_STATE
     WEB_STATE["exchanges"] = config["exchanges"]
 
     print(f"Connected to {len(config['exchanges'])} exchanges", flush=True)
@@ -129,21 +166,25 @@ def main():
 
     class TerminalOutput:
         def update(self, opportunities, portfolio):
-            WEB_STATE["opportunities"] = opportunities
-            WEB_STATE["portfolio"] = {
-                "balance": portfolio.total_value_usd,
-                "trades": portfolio.total_trades,
-                "wins": portfolio.wins,
-                "losses": portfolio.losses,
-                "win_rate": f"{portfolio.wins / portfolio.total_trades * 100:.0f}%" if portfolio.total_trades > 0 else "N/A",
-                "total_pnl": portfolio.total_pnl
-            }
-            if opportunities:
-                WEB_STATE["ai_advice"] = generate_ai_advice(opportunities, config)
-            if debug_enabled:
-                clear_screen()
-                format_opportunities(opportunities, config.get("terminal", {}).get("max_rows", 10))
-                format_portfolio(portfolio)
+            import time
+            global _last_opportunities, _last_update_time
+            with web_lock:
+                WEB_STATE["opportunities"] = opportunities
+                _last_opportunities = opportunities
+                _last_update_time = time.time()
+                WEB_STATE["portfolio"] = {
+                    "balance": portfolio.total_value_usd,
+                    "trades": portfolio.total_trades,
+                    "wins": portfolio.wins,
+                    "losses": portfolio.losses,
+                    "win_rate": f"{portfolio.wins / portfolio.total_trades * 100:.0f}%" if portfolio.total_trades > 0 else "N/A",
+                    "total_pnl": portfolio.total_pnl
+                }
+                if opportunities:
+                    WEB_STATE["ai_advice"] = generate_ai_advice(opportunities, config)
+            clear_screen()
+            format_opportunities(opportunities, config.get("terminal", {}).get("max_rows", 10))
+            format_portfolio(portfolio)
             for opp in opportunities:
                 if opp.profit_pct >= config.get("min_profit_pct", 0.05):
                     db.save_opportunity(opp)

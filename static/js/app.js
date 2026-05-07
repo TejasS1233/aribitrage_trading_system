@@ -1,4 +1,33 @@
 const API_URL = '/api/status';
+const PNL_URL = '/api/pnl-history';
+
+async function fetchPnLHistory() {
+  const res = await fetch(PNL_URL);
+  if (!res.ok) throw new Error('PnL error');
+  return res.json();
+}
+
+function renderSparkline(data) {
+  const container = document.getElementById('pnl-chart');
+  if (!container) return;
+  if (!data.pnl || data.pnl.length < 2) {
+    container.textContent = 'No history';
+    return;
+  }
+  const values = data.pnl.map(p => p.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const width = 80;
+  const height = 24;
+  const points = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * width;
+    const y = height - ((v - min) / range) * height;
+    return `${x},${y}`;
+  }).join(' ');
+  const color = values[values.length - 1] >= 0 ? 'var(--green)' : 'var(--red)';
+  container.innerHTML = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><polyline points="${points}" fill="none" stroke="${color}" stroke-width="2"/></svg>`;
+}
 
 async function fetchStatus() {
   const res = await fetch(API_URL);
@@ -21,27 +50,26 @@ function getProfitClass(profit) {
 
 function renderStats(data) {
   document.getElementById('balance').textContent = formatCurrency(data.portfolio.balance);
-  document.getElementById('wins').textContent = data.portfolio.wins;
-  document.getElementById('losses').textContent = data.portfolio.losses;
-  document.getElementById('trades').textContent = data.portfolio.trades;
+  document.getElementById('win-rate').textContent = `Win Rate: ${data.portfolio.win_rate || '--'}`;
 }
 
 function renderCounts(data) {
   document.getElementById('found').textContent = data.opportunities.length;
   document.getElementById('cross').textContent = data.opportunities.filter(o => o.type === 'cross_exchange').length;
   document.getElementById('triangular').textContent = data.opportunities.filter(o => o.type === 'triangular').length;
-  document.getElementById('opps-count').textContent = data.opportunities.length;
 }
 
 function renderExchanges(data) {
+  const el = document.getElementById('win-rate');
+  if (!el) return;
   const list = data.exchanges.slice(0, 6).join(', ') + (data.exchanges.length > 6 ? '...' : '');
-  document.getElementById('exchanges-list').textContent = list || '-';
+  el.textContent = `Win Rate: ${data.portfolio.win_rate || '--'}`;
 }
 
 function renderAdvice(data) {
   const el = document.getElementById('ai-advice');
   if (data.ai_advice) {
-    el.textContent = data.ai_advice;
+    el.innerHTML = data.ai_advice;
   } else {
     el.textContent = 'Waiting for opportunities...';
   }
@@ -94,12 +122,13 @@ function renderOpportunities(data) {
 
 async function update() {
   try {
-    const data = await fetchStatus();
+    const [data, pnlData] = await Promise.all([fetchStatus(), fetchPnLHistory()]);
     renderStats(data);
     renderCounts(data);
     renderExchanges(data);
     renderAdvice(data);
     renderOpportunities(data);
+    renderSparkline(pnlData);
   } catch (e) {
     console.error('Update failed:', e);
   }

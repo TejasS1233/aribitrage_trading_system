@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from groq import Groq
 from core.models import Opportunity
 
@@ -10,6 +11,14 @@ def get_groq_client():
     if not api_key or api_key == "your_key_here":
         return None
     return Groq(api_key=api_key)
+
+
+def markdown_to_html(text: str) -> str:
+    """Convert markdown bold/italic to HTML"""
+    text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+    text = re.sub(r'\*(.+?)\*', r'<em>\1</em>', text)
+    text = text.replace('\n', '<br>')
+    return text
 
 
 def generate_ai_advice(opps: list[Opportunity], config: dict = None) -> str:
@@ -24,7 +33,6 @@ def generate_ai_advice(opps: list[Opportunity], config: dict = None) -> str:
     if not profit_opps:
         return f"Found {len(opps)} opportunities but all negative. Fees exceed spreads. Try lower fees or wait for volatility."
     
-    # Build market summary
     summary = []
     for o in profit_opps[:5]:
         route = f"{o.exchanges} {o.path}"
@@ -35,7 +43,6 @@ def generate_ai_advice(opps: list[Opportunity], config: dict = None) -> str:
     if not client:
         return f"Configure GROQ_API_KEY in .env for AI analysis.\nLeading: {profit_opps[0].path[0]} ({profit_opps[0].arb_type.value}) +{profit_opps[0].profit_pct:.4f}% — moderate confidence."
     
-    # Build prompt - formal analyst style
     prompt = f"""Analyze these arbitrage opportunities and provide professional market analysis:
 
 {market_summary}
@@ -53,7 +60,7 @@ Provide concise, professional guidance. Focus on risk assessment and optimal exe
             max_tokens=150,
         )
         advice = response.choices[0].message.content
-        return advice
+        return markdown_to_html(advice)
     except Exception as e:
         return f"AI error: {str(e)}"
 
