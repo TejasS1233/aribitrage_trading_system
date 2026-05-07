@@ -1,17 +1,18 @@
-# crypto-arbitrage-detector
+# modular-arbitrage-engine
 
-Crypto arbitrage detection system that monitors price discrepancies across 100+ exchanges and paper-trades them.
+Modular arbitrage execution engine with plugin-based exchange integration, paper trading, and configurable slippage models.
 
 ## Features
 
-- **Cross-exchange arbitrage** — buy low on one exchange, sell high on another
-- **Triangular arbitrage** — cycle through 3 pairs on one exchange
-- **Bellman-Ford detection** — find complex multi-hop opportunities
-- **Paper trading** — test strategies with fake money, tracks PnL, win rate, fees
-- **Slippage simulation** — 30% of profit lost to market impact and timing
-- **Live terminal** — see opportunities in real-time
-
-Works with Binance, Coinbase, Kraken, and 100+ other exchanges.
+- **Plugin-based architecture** - add new exchanges, DEXs, or data sources easily
+- Cross-exchange arbitrage across 100+ exchanges via CCXT + custom plugin adapters
+- Triangular arbitrage within single exchanges
+- Bellman-Ford graph-based arbitrage detection
+- Paper trading with PnL tracking and win rate analytics
+- Configurable slippage simulation (conservative default: 30%)
+- Live terminal + web dashboard for real-time opportunity monitoring
+  
+Unlike typical trading bots, this project is designed as a modular research and execution framework for arbitrage systems.
 ## Quick start
 
 ```bash
@@ -46,6 +47,13 @@ min_volume: 100
 starting_balance:
   USDT: 10000
 ```
+## Live Arbitrage Detection Output (real-time scan)
+Live output from the arbitrage engine scanning multiple markets in real time:
+
+<img width="647" height="112" alt="Screenshot 2026-05-07 222503" src="https://github.com/user-attachments/assets/681704e1-2df3-4603-b740-834cc82fa073" />
+
+
+<img width="647" height="65" alt="Screenshot 2026-05-07 222444" src="https://github.com/user-attachments/assets/0891defa-0728-4319-ac14-d1013f578fa6" />
 
 ## Running tests
 
@@ -69,19 +77,21 @@ python -m pytest tests/ -v
 └── tests/            # test suite
 ```
 
-## Learning
+## Learning Resources
 
-Want to understand arbitrage? See [MASTERY-CONCEPTS.md](MASTERY-CONCEPTS.md) — covers AMM math, graph theory, flash loans, MEV, and 200+ other concepts.
-
+Want to understand arbitrage? See [MASTERY-CONCEPTS.md](MASTERY-CONCEPTS.md) — covers AMM math, graph theory, flash loans, MEV and arbitrage market structure.
 ## Fee Note
 
-This bot uses **maker fees** (0.01%) by default. To get these rates:
-- Trade $100k+/month on Binance → 0.02% maker
-- Trade $1M+/month → 0.01% maker
-- Most retail traders pay 0.1% (taker fees)
+Default maker fee: 0.01% (configurable per exchange)
 
-The bot will find MORE opportunities with lower fees. Adjust `fees.default` in config.yaml based on your volume tier.
+Lower fee tiers significantly impact detected arbitrage opportunities.
 
----
+All fees can be adjusted in `config.yaml` based on your trading volume tier.
+
+## Notes
+
+This project is experimental and focused on modeling realistic arbitrage conditions rather than guaranteed profitability.
+
+Feedback, improvements, and contributions are welcome.
 
 > **Disclaimer:** This project is for educational purposes only. Not financial advice.
