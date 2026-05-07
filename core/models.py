@@ -9,6 +9,8 @@ class ArbType(Enum):
     BELLMAN_FORD = "bellman_ford"
     DEX_CROSS = "dex_cross"
     POLYMARKET = "polymarket"
+    FUNDING_RATE = "funding_rate"
+    STABLECOIN_DEPEG = "stablecoin_depeg"
 
 @dataclass
 class Ticker:

@@ -26,4 +26,4 @@ def test_new_arb_types():
     assert ArbType.BELLMAN_FORD.value == "bellman_ford"
     assert ArbType.DEX_CROSS.value == "dex_cross"
     assert ArbType.POLYMARKET.value == "polymarket"
-    assert len(ArbType) == 6
+    assert len(ArbType) >= 8

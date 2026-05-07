@@ -68,12 +68,20 @@ class Engine:
         opportunities += find_cross_exchange_opportunities(tickers, self.fees, self.min_profit)
         opportunities += find_bellman_ford_opportunities(tickers, self.fees, self.min_profit)
 
+        # Fetch funding rates if adapter supports it
+        funding_rates = {}
+        if hasattr(self.source, 'fetch_funding_rates'):
+            funding_rates = self.source.fetch_funding_rates()
+            if funding_rates and self.debug:
+                self.logger.info("Funding rates fetched: %d", len(funding_rates))
+
         if self.debug:
             self.logger.info(
-                "Opportunities found (triangular=%d cross=%d bellman=%d total=%d)",
+                "Opportunities found (triangular=%d cross=%d bellman=%d funding=%d total=%d)",
                 sum(1 for o in opportunities if o.arb_type.value == "triangular"),
                 sum(1 for o in opportunities if o.arb_type.value == "cross_exchange"),
                 sum(1 for o in opportunities if o.arb_type.value == "bellman_ford"),
+                sum(1 for o in opportunities if o.arb_type.value == "funding_rate"),
                 len(opportunities),
             )
 
