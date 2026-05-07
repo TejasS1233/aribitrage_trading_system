@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from core.models import Ticker
 from core.symbol_discovery import SymbolDiscovery
 
@@ -15,6 +16,7 @@ class MockExchange:
 
 def test_find_cross_symbols():
     """Symbols on 2+ exchanges should be in cross_symbols."""
+    # Simulate two exchanges with overlapping markets
     markets_a = {
         "BTC/USDT": {"symbol": "BTC/USDT", "base": "BTC", "quote": "USDT"},
         "ETH/USDT": {"symbol": "ETH/USDT", "base": "ETH", "quote": "USDT"},
@@ -33,8 +35,8 @@ def test_find_cross_symbols():
     discovery._discover()
 
     assert "BTC/USDT" in discovery.cross_symbols
-    assert "ETH/USDT" not in discovery.cross_symbols
-    assert "SOL/USDT" not in discovery.cross_symbols
+    assert "ETH/USDT" not in discovery.cross_symbols  # only on A
+    assert "SOL/USDT" not in discovery.cross_symbols  # only on B
 
 
 def test_find_triangular_symbols():
@@ -53,6 +55,7 @@ def test_find_triangular_symbols():
 
     discovery._discover()
 
+    # BTC/USDT, ETH/USDT, ETH/BTC form a triangle
     assert "BTC/USDT" in discovery.triangular_symbols
     assert "ETH/USDT" in discovery.triangular_symbols
     assert "ETH/BTC" in discovery.triangular_symbols

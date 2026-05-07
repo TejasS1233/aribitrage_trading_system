@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+
 from core.models import Ticker
 from core.stale_filter import filter_stale_tickers
 
