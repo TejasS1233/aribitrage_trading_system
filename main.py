@@ -1,12 +1,15 @@
 import os
 import yaml
 import logging
+from dotenv import load_dotenv
+load_dotenv()
 from core.engine import Engine
 from core.symbol_discovery import SymbolDiscovery
 from plugins.cex.ccxt_adapter import CCXTAdapter
 from plugins.websocket.ws_manager import WebSocketManager
 from output.terminal import format_opportunities, format_portfolio, clear_screen
 from output.database import Database
+from core.ai_advice import generate_ai_advice
 
 
 def load_config(path: str = "config.yaml") -> dict:
@@ -59,6 +62,7 @@ def main():
             cycle_count[0] += 1
             clear_screen()
             format_opportunities(opportunities, config.get("terminal", {}).get("max_rows", 10))
+            format_ai_advice(opportunities, config)
             format_portfolio(portfolio)
             for opp in opportunities:
                 if opp.profit_pct >= config.get("min_profit_pct", 0.05):

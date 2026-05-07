@@ -6,6 +6,7 @@ from core.arbitrage.triangular import find_triangular_opportunities
 from core.arbitrage.cross_exchange import find_cross_exchange_opportunities
 from core.arbitrage.bellman_ford import find_bellman_ford_opportunities
 from core.stale_filter import filter_stale_tickers
+from core.ai_advice import generate_ai_advice, check_ai_configured
 from plugins.base import DataSource
 
 

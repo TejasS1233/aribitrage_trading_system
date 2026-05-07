@@ -9,3 +9,4 @@ python-socketio
 websockets
 web3>=6.0.0
 solana>=0.30.0
+groq
