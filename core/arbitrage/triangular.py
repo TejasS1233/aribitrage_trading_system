@@ -75,7 +75,7 @@ def _get_min_volume(ticker_map: dict[tuple, Ticker], a: str, b: str, c: str) -> 
             vols.append(v)
     
     if not vols:
-        return 1000  # Default $1000 if no volume data
+        return 100  # Default $100 if no volume data
     return min(vols)
 
 def _build_graph(tickers: dict[str, Ticker], fee: float) -> dict[str, dict[str, float]]:

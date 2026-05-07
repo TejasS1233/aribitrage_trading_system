@@ -1,26 +1,17 @@
 # crypto-arbitrage-detector
 
-> **Disclaimer:** This project is for educational and research purposes only. It is not financial advice. Do not use this for actual trading or investment. Crypto markets are extremely competitive - real arbitrage opportunities are captured by HFT firms with sub-millisecond infrastructure. This tool will not make you money.
+Crypto arbitrage detection system that monitors price discrepancies across 100+ exchanges and paper-trades them.
 
-Arbitrage monitoring system that detects price discrepancies across 100+ crypto exchanges and paper-trades them.
+## Features
 
-## What it does
+- **Cross-exchange arbitrage** — buy low on one exchange, sell high on another
+- **Triangular arbitrage** — cycle through 3 pairs on one exchange
+- **Bellman-Ford detection** — find complex multi-hop opportunities
+- **Paper trading** — test strategies with fake money, tracks PnL, win rate, fees
+- **Slippage simulation** — 30% of profit lost to market impact and timing
+- **Live terminal** — see opportunities in real-time
 
-- **Cross-exchange arbitrage** - buys BTC cheap on Coinbase, sells expensive on Binance
-- **Triangular arbitrage** - cycles through 3 currencies on one exchange (e.g. BTC->ETH->USDT->BTC)
-- **Bellman-Ford multi-hop detection** - finds negative-weight cycles across exchange rate graphs
-- **Symbol auto-discovery** - automatically finds tradeable pairs across connected exchanges
-- **Stale data filtering** - discards tickers older than a configurable threshold
-- **WebSocket streaming** - real-time price updates via ccxt.pro (when enabled)
-- **DEX monitoring** - reads Uniswap V2 on-chain reserves for cross-DEX arb detection
-- **Polymarket adapter** - detects under-par binary outcome tokens (YES+NO < $1)
-- **Optimal trade size** - calculates best volume based on order book depth
-- **Paper trading** - simulates trades with fake money, tracks PnL, win rate, fees
-- **Live terminal dashboard** - Rich-powered display of opportunities and portfolio
-- **SQLite history** - logs every opportunity and trade to a local database
-
-Uses ccxt for exchange connectivity, so it works with Binance, Coinbase, Kraken, and 100+ other exchanges out of the box.
-
+Works with Binance, Coinbase, Kraken, and 100+ other exchanges.
 ## Quick start
 
 ```bash
@@ -45,39 +36,18 @@ symbols:
   - ETH/BTC
 
 fees:
-  default: 0.0001          # Uses MAKER fees (0.01%) - realistic for high-volume traders
-  binance: 0.0001        # See fee tiers: https://www.binance.com/en/fee/schedule
+  default: 0.0001
+  binance: 0.0001
   coinbase: 0.0005
 
-poll_interval: 1.0       # seconds between checks
-min_profit_pct: 0.05      # minimum profit % to log
-
-# Volume handling
-# Exchanges often return volume=0 (no data). System defaults to $1000 when unavailable.
-min_volume: 1000         # minimum volume to consider (filters noise)
+poll_interval: 1.0
+min_profit_pct: 0.05
+min_volume: 100
 starting_balance:
   USDT: 10000
-
-auto_discover:
-  enabled: false           # auto-find tradeable symbols
-  min_volume_24h: 100000
-
-websocket:
-  enabled: false           # requires ccxt-pro
-
-stale_filter:
-  enabled: true
-  max_age_seconds: 10.0
-
-dex:
-  enabled: false           # requires Ethereum RPC
-  rpc_url: "https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY"
-
-polymarket:
-  enabled: false
 ```
 
-## Tests
+## Running tests
 
 ```bash
 python -m pytest tests/ -v
@@ -86,39 +56,22 @@ python -m pytest tests/ -v
 ## Project structure
 
 ```
-├── main.py                    # entry point
-├── config.yaml                # exchange/symbol/fee settings
+├── main.py              # entry point
+├── config.yaml        # settings
 ├── core/
-│   ├── models.py              # Ticker, Opportunity, PaperTrade, PaperPortfolio
-│   ├── engine.py              # main loop - fetch -> detect -> paper trade -> display
-│   ├── stale_filter.py        # discard old tickers
-│   ├── symbol_discovery.py    # auto-find tradeable symbols
-│   └── arbitrage/
-│       ├── cross_exchange.py  # buy low on A, sell high on B
-│       ├── triangular.py      # A->B->C->A cycle detection
-│       ├── bellman_ford.py    # negative-weight cycle detection
-│       └── optimal_size.py    # trade size calculator
+│   ├── engine.py     # main loop
+│   ├── models.py    # data structures
+│   └── arbitrage/  # detection algorithms
 ├── plugins/
-│   ├── base.py                # abstract DataSource interface
-│   ├── cex/
-│   │   └── ccxt_adapter.py    # ccxt implementation for 100+ exchanges
-│   ├── dex/
-│   │   └── uniswap_v2.py      # on-chain reserve monitoring
-│   ├── polymarket/
-│   │   └── polymarket_adapter.py  # binary outcome arb
-│   └── websocket/
-│       └── ws_manager.py      # real-time WebSocket streaming
-├── output/
-│   ├── terminal.py            # Rich dashboard
-│   └── database.py            # SQLite persistence
-└── tests/
+│   ├── cex/ccxt_adapter.py    # exchange connectivity
+│   ├── dex/uniswap_v2.py      # on-chain data
+│   └── polymarket/           # prediction markets
+└── tests/            # test suite
 ```
 
-## Learning the concepts
+## Learning
 
-If you want to understand how arbitrage actually works - AMM math, graph theory, flash loans, MEV, order books, Bellman-Ford for cycle detection, and 200+ other concepts - see [MASTERY-CONCEPTS.md](MASTERY-CONCEPTS.md).
-
-It's a textbook-length reference compiled from 13 open-source arbitrage repos, organized into 10 chapters covering everything from blockchain fundamentals to trading system architecture.
+Want to understand arbitrage? See [MASTERY-CONCEPTS.md](MASTERY-CONCEPTS.md) — covers AMM math, graph theory, flash loans, MEV, and 200+ other concepts.
 
 ## Fee Note
 
@@ -128,3 +81,7 @@ This bot uses **maker fees** (0.01%) by default. To get these rates:
 - Most retail traders pay 0.1% (taker fees)
 
 The bot will find MORE opportunities with lower fees. Adjust `fees.default` in config.yaml based on your volume tier.
+
+---
+
+> **Disclaimer:** This project is for educational purposes only. Not financial advice.

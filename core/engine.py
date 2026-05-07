@@ -10,6 +10,9 @@ from core.ai_advice import generate_ai_advice, check_ai_configured
 from plugins.base import DataSource
 
 
+import random
+
+
 class Engine:
     def __init__(self, config: dict, data_source: DataSource, outputs: list, ws_manager=None):
         self.config = config
@@ -97,7 +100,7 @@ class Engine:
             passes_hurdle = opp.profit_pct >= self.hurdle_rate
             passes_min_vol = opp.volume >= self.min_volume
             
-            if passes_hurdle and passes_min_vol:
+            if passes_hurdle and passes_min_vol and random.random() < 0.8:  # 80% execution rate
                 trade = self._paper_trade(opp)
                 self.portfolio.total_trades += 1
                 if self.debug:
@@ -116,12 +119,13 @@ class Engine:
         default_fee = self.fees.get("default", 0.001)
         fee_rate = default_fee
         
-        # Calculate fees: price * volume * fee_rate for both buy AND sell
-        # profit_amount is already in $, so convert back to price equivalent
-        trade_value = opp.profit_amount / (opp.profit_pct / 100) if opp.profit_pct > 0 else opp.volume * 1000
+        slippage_pct = (opp.profit_pct * 0.3) if opp.profit_pct > 0 else 0.1  # 30% slippage eats profit
+        effective_profit = opp.profit_amount * (1 - slippage_pct)
+        
+        trade_value = opp.profit_amount / (opp.profit_pct / 100) if opp.profit_pct > 0 else opp.volume * 100
         total_fees = trade_value * fee_rate * 2  # buy + sell fees
         
-        realized_pnl = opp.profit_amount - total_fees
+        realized_pnl = effective_profit - total_fees
 
         return PaperTrade(
             opportunity=opp,

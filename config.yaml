@@ -57,7 +57,7 @@ fees:
 
 poll_interval: 2.0
 min_profit_pct: 0.05
-min_volume: 1000
+min_volume: 100
 
 hurdle_rate: 0
 

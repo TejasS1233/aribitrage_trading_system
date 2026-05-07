@@ -17,7 +17,7 @@ def generate_ai_advice(opps: list[Opportunity], config: dict = None) -> str:
     client = get_groq_client()
     
     if not opps:
-        return "No opportunities found. Markets may be efficient or exchanges may be down."
+        return "No opportunities detected. Markets may be efficient or connectivity issues present."
     
     profit_opps = [o for o in opps if o.profit_pct > 0]
     
@@ -33,33 +33,26 @@ def generate_ai_advice(opps: list[Opportunity], config: dict = None) -> str:
     market_summary = "\n".join(summary)
     
     if not client:
-        return f"AI not configured. Add GROQ_API_KEY to .env\nBest: {profit_opps[0].path[0]} ({profit_opps[0].arb_type.value}) +{profit_opps[0].profit_pct:.4f}%"
+        return f"Configure GROQ_API_KEY in .env for AI analysis.\nLeading: {profit_opps[0].path[0]} ({profit_opps[0].arb_type.value}) +{profit_opps[0].profit_pct:.4f}% — moderate confidence."
     
-    # Build prompt - conversational trader style
-    prompt = f"""You're a chill crypto trader. Look at these arb opportunities:
+    # Build prompt - formal analyst style
+    prompt = f"""Analyze these arbitrage opportunities and provide professional market analysis:
 
 {market_summary}
 
-Talk like a real person. Short, practical advice. Say what to do, not a lecture.
-
-Example: "Bro, ETH/USDT looking fire. Quick +0.02% on binance->kucoin
-Get in, get out fast. $500-1k is plenty for this one." """
+Provide concise, professional guidance. Focus on risk assessment and optimal execution size."""
 
     try:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": "You're a chill crypto trader who keeps it real. Short, practical advice. No lectures."},
+                {"role": "system", "content": "You are a professional crypto market analyst. Provide concise, formal guidance on arbitrage opportunities. Focus on risk assessment and execution strategy."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7,
+            temperature=0.3,
             max_tokens=150,
         )
         advice = response.choices[0].message.content
-        # Clean up the response
-        advice = advice.replace("As a crypto arbitrage trading coach, ", "")
-        advice = advice.replace("As a crypto trader, ", "")
-        advice = advice.replace("Crypto arbitrage ", "")
         return advice
     except Exception as e:
         return f"AI error: {str(e)}"
