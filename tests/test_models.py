@@ -21,3 +21,9 @@ def test_paper_portfolio_initial():
     p = PaperPortfolio(balance={"USDT": 10000})
     assert p.total_trades == 0
     assert p.total_pnl == 0.0
+
+def test_new_arb_types():
+    assert ArbType.BELLMAN_FORD.value == "bellman_ford"
+    assert ArbType.DEX_CROSS.value == "dex_cross"
+    assert ArbType.POLYMARKET.value == "polymarket"
+    assert len(ArbType) == 6

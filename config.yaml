@@ -63,3 +63,28 @@ database:
 
 terminal:
   max_rows: 15
+
+auto_discover:
+  enabled: false
+  min_volume_24h: 100000
+  update_interval: 300
+
+websocket:
+  enabled: false
+  fallback_poll_interval: 5.0
+
+stale_filter:
+  max_age_seconds: 5.0
+
+dex:
+  enabled: false
+  ethereum:
+    rpc_url: ""
+    uniswap_factory: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
+    sushiswap_factory: "0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac"
+  solana:
+    rpc_url: "https://api.mainnet-beta.solana.com"
+
+polymarket:
+  enabled: false
+  min_spread: 0.01

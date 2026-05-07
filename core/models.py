@@ -6,6 +6,9 @@ class ArbType(Enum):
     TRIANGULAR = "triangular"
     CROSS_EXCHANGE = "cross_exchange"
     CIRCULAR = "circular"
+    BELLMAN_FORD = "bellman_ford"
+    DEX_CROSS = "dex_cross"
+    POLYMARKET = "polymarket"
 
 @dataclass
 class Ticker:
