@@ -35,29 +35,32 @@ def generate_ai_advice(opps: list[Opportunity], config: dict = None) -> str:
     if not client:
         return f"AI not configured. Add GROQ_API_KEY to .env\nBest: {profit_opps[0].path[0]} ({profit_opps[0].arb_type.value}) +{profit_opps[0].profit_pct:.4f}%"
     
-    # Build prompt with more educational detail
-    best = max(profit_opps, key=lambda o: o.profit_pct)
-    trading_size = 1000  # Assume $1000 trade for education
-    
-    prompt = f"""You are a crypto arbitrage trading coach. Analyze these live opportunities:
+    # Build prompt - conversational trader style
+    prompt = f"""You're a chill crypto trader. Look at these arb opportunities:
 
 {market_summary}
 
-Give brief educational advice (2-3 sentences) covering:
-1. What the arbitrage is (how it works)
-2. Why it's profitable (the spread)
-3. How much to invest and expected return
+Talk like a real person. Short, practical advice. Say what to do, not a lecture.
 
-Keep it beginner-friendly and practical."""
+Example: "Bro, ETH/USDT looking fire. Quick +0.02% on binance->kucoin
+Get in, get out fast. $500-1k is plenty for this one." """
 
     try:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": "You're a chill crypto trader who keeps it real. Short, practical advice. No lectures."},
+                {"role": "user", "content": prompt}
+            ],
             temperature=0.7,
-            max_tokens=100,
+            max_tokens=150,
         )
-        return response.choices[0].message.content
+        advice = response.choices[0].message.content
+        # Clean up the response
+        advice = advice.replace("As a crypto arbitrage trading coach, ", "")
+        advice = advice.replace("As a crypto trader, ", "")
+        advice = advice.replace("Crypto arbitrage ", "")
+        return advice
     except Exception as e:
         return f"AI error: {str(e)}"
 
